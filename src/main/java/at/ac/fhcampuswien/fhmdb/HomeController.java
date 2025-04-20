@@ -1,6 +1,7 @@
 package at.ac.fhcampuswien.fhmdb;
 
 import at.ac.fhcampuswien.fhmdb.api.MovieAPI;
+import at.ac.fhcampuswien.fhmdb.models.ClickEventHandler;
 import at.ac.fhcampuswien.fhmdb.models.Genre;
 import at.ac.fhcampuswien.fhmdb.models.Movie;
 import at.ac.fhcampuswien.fhmdb.models.SortedState;
@@ -42,6 +43,9 @@ public class HomeController implements Initializable {
     @FXML
     public JFXButton sortBtn;
 
+    @FXML
+    public JFXButton watchBtn;
+
     public List<Movie> allMovies;
 
     protected ObservableList<Movie> observableMovies = FXCollections.observableArrayList();
@@ -80,8 +84,10 @@ public class HomeController implements Initializable {
     }
 
     public void initializeLayout() {
-        movieListView.setItems(observableMovies);   // set the items of the listview to the observable list
-        movieListView.setCellFactory(movieListView -> new MovieCell()); // apply custom cells to the listview
+
+//        movieListView.setItems(observableMovies);   // set the items of the listview to the observable list
+//        movieListView.setCellFactory(movieListView -> new MovieCell(onAddToWatchlistClicked)); // apply custom cells to the listview
+
 
         // genre combobox
         Object[] genres = Genre.values();   // get all genres
@@ -110,6 +116,18 @@ public class HomeController implements Initializable {
         ratingFromComboBox.setPromptText("Filter by Rating");
     }
 
+//    private final ClickEventHandler onAddToWatchlistClicked = (clickedItem) ->
+//    { ClickEventHandler addToWatchlistClicked = new ClickEventHandler() {
+//        @Override
+//        public <T> void onClick(T t) {
+//            Watchlist watchlist = new Watchlist;
+//
+//        }
+//        }
+//    });
+
+
+
     public void setMovies(List<Movie> movies) {
         allMovies = movies;
     }
@@ -119,13 +137,14 @@ public class HomeController implements Initializable {
         observableMovies.addAll(movies);
     }
 
-    public void sortMovies(){
+    public void sortMovies() {
         if (sortedState == SortedState.NONE || sortedState == SortedState.DESCENDING) {
             sortMovies(SortedState.ASCENDING);
         } else if (sortedState == SortedState.ASCENDING) {
             sortMovies(SortedState.DESCENDING);
         }
     }
+
     // sort movies based on sortedState
     // by default sorted state is NONE
     // afterwards it switches between ascending and descending
@@ -139,23 +158,23 @@ public class HomeController implements Initializable {
         }
     }
 
-    public List<Movie> filterByQuery(List<Movie> movies, String query){
-        if(query == null || query.isEmpty()) return movies;
+    public List<Movie> filterByQuery(List<Movie> movies, String query) {
+        if (query == null || query.isEmpty()) return movies;
 
-        if(movies == null) {
+        if (movies == null) {
             throw new IllegalArgumentException("movies must not be null");
         }
 
         return movies.stream().filter(movie ->
-                movie.getTitle().toLowerCase().contains(query.toLowerCase()) ||
-                movie.getDescription().toLowerCase().contains(query.toLowerCase()))
+                        movie.getTitle().toLowerCase().contains(query.toLowerCase()) ||
+                                movie.getDescription().toLowerCase().contains(query.toLowerCase()))
                 .toList();
     }
 
-    public List<Movie> filterByGenre(List<Movie> movies, Genre genre){
-        if(genre == null) return movies;
+    public List<Movie> filterByGenre(List<Movie> movies, Genre genre) {
+        if (genre == null) return movies;
 
-        if(movies == null) {
+        if (movies == null) {
             throw new IllegalArgumentException("movies must not be null");
         }
 
@@ -184,7 +203,7 @@ public class HomeController implements Initializable {
         String genreValue = validateComboboxValue(genreComboBox.getSelectionModel().getSelectedItem());
 
         Genre genre = null;
-        if(genreValue != null) {
+        if (genreValue != null) {
             genre = Genre.valueOf(genreValue);
         }
 
@@ -197,7 +216,7 @@ public class HomeController implements Initializable {
     }
 
     public String validateComboboxValue(Object value) {
-        if(value != null && !value.toString().equals("No filter")) {
+        if (value != null && !value.toString().equals("No filter")) {
             return value.toString();
         }
         return null;
