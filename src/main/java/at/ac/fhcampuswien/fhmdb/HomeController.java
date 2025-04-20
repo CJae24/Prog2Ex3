@@ -52,6 +52,7 @@ public class HomeController implements Initializable {
 
     protected SortedState sortedState;
 
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         initializeState();
@@ -85,8 +86,8 @@ public class HomeController implements Initializable {
 
     public void initializeLayout() {
 
-//        movieListView.setItems(observableMovies);   // set the items of the listview to the observable list
-//        movieListView.setCellFactory(movieListView -> new MovieCell(onAddToWatchlistClicked)); // apply custom cells to the listview
+        movieListView.setItems(observableMovies);   // set the items of the listview to the observable list
+        movieListView.setCellFactory(movieListView -> new MovieCell(onAddToWatchlistClicked)); // apply custom cells to the listview
 
 
         // genre combobox
@@ -115,17 +116,6 @@ public class HomeController implements Initializable {
         ratingFromComboBox.getItems().addAll(ratings);    // add all ratings to the combobox
         ratingFromComboBox.setPromptText("Filter by Rating");
     }
-
-//    private final ClickEventHandler onAddToWatchlistClicked = (clickedItem) ->
-//    { ClickEventHandler addToWatchlistClicked = new ClickEventHandler() {
-//        @Override
-//        public <T> void onClick(T t) {
-//            Watchlist watchlist = new Watchlist;
-//
-//        }
-//        }
-//    });
-
 
 
     public void setMovies(List<Movie> movies) {
@@ -262,4 +252,19 @@ public class HomeController implements Initializable {
                 .filter(movie -> movie.getReleaseYear() >= startYear && movie.getReleaseYear() <= endYear)
                 .collect(Collectors.toList());
     }
+
+
+    private final ClickEventHandler onAddToWatchlistClicked = (clickedItem) -> {
+        if (clickedItem instanceof Movie) {
+            Movie movie = (Movie) clickedItem;
+            watchlist.addMovie(movie);
+            System.out.println("Film hinzugefügt: " + movie.getTitle());
+        }
+    };
+
 }
+
+
+
+
+
