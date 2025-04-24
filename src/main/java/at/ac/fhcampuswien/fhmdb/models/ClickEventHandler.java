@@ -1,6 +1,6 @@
 package at.ac.fhcampuswien.fhmdb.models;
 
-public interface ClickEventHandler {
-
-    <T> void onClick(T t);
+@FunctionalInterface
+public interface ClickEventHandler<T> {
+    void onClick(T t);
 }
