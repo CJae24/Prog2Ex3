@@ -1,11 +1,13 @@
 package at.ac.fhcampuswien.fhmdb;
 
 import at.ac.fhcampuswien.fhmdb.api.MovieAPI;
+import at.ac.fhcampuswien.fhmdb.exceptions.MovieApiException;
 import at.ac.fhcampuswien.fhmdb.models.ClickEventHandler;
 import at.ac.fhcampuswien.fhmdb.models.Genre;
 import at.ac.fhcampuswien.fhmdb.models.Movie;
 import at.ac.fhcampuswien.fhmdb.models.SortedState;
 import at.ac.fhcampuswien.fhmdb.ui.MovieCell;
+import at.ac.fhcampuswien.fhmdb.util.Helpers;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXListView;
@@ -60,7 +62,12 @@ public class HomeController implements Initializable {
     }
 
     public void initializeState() {
-        List<Movie> result = MovieAPI.getAllMovies();
+        List<Movie> result = null;
+        try {
+            result = MovieAPI.getAllMovies();
+        } catch (MovieApiException e) {
+            Helpers.showToast(e.getMessage());
+        }
         setMovies(result);
         setMovieList(result);
         sortedState = SortedState.NONE;
@@ -196,8 +203,14 @@ public class HomeController implements Initializable {
         if (genreValue != null) {
             genre = Genre.valueOf(genreValue);
         }
+        List<Movie> movies = null;
+        try {
+            movies = getMovies(searchQuery, genre, releaseYear, ratingFrom);
+        } catch (MovieApiException e) {
+            Helpers.showToast(e.getMessage() + ", movies were loaded from the cache");
+            //TODO Load movies from DB Cache
+        }
 
-        List<Movie> movies = getMovies(searchQuery, genre, releaseYear, ratingFrom);
         setMovies(movies);
         setMovieList(movies);
         // applyAllFilters(searchQuery, genre);
@@ -212,7 +225,7 @@ public class HomeController implements Initializable {
         return null;
     }
 
-    public List<Movie> getMovies(String searchQuery, Genre genre, String releaseYear, String ratingFrom) {
+    public List<Movie> getMovies(String searchQuery, Genre genre, String releaseYear, String ratingFrom) throws MovieApiException {
         return MovieAPI.getAllMovies(searchQuery, genre, releaseYear, ratingFrom);
     }
 
@@ -254,12 +267,9 @@ public class HomeController implements Initializable {
     }
 
 
-    private final ClickEventHandler onAddToWatchlistClicked = (clickedItem) -> {
-        if (clickedItem instanceof Movie) {
-            Movie movie = (Movie) clickedItem;
-            watchlist.addMovie(movie);
-            System.out.println("Film hinzugefügt: " + movie.getTitle());
-        }
+    private final ClickEventHandler<Movie> onAddToWatchlistClicked = (clickedItem) -> {
+        //watchlist.addMovie(movie);
+        System.out.println("Film zur Watchlist hinzugefügt: " + clickedItem.getTitle());
     };
 
 }
