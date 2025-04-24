@@ -17,9 +17,9 @@ public class MovieCell extends ListCell<Movie> {
     private final Label title = new Label();
     private final Label detail = new Label();
     private final Label genre = new Label();
-    private final JFXButton watchlistBtn = new JFXButton("Watchlist");
+    private final JFXButton watchlistBtn = new JFXButton("Add to Watchlist");
     private final JFXButton detailBtn = new JFXButton("Show Details");
-    private final VBox layout = new VBox(title, detail, genre, detailBtn);
+    private final VBox layout = new VBox(title, detail, genre, detailBtn, watchlistBtn);
     private boolean collapsedDetails = true;
 
     public MovieCell(ClickEventHandler addToWatchlistClicked) {

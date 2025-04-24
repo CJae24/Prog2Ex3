@@ -1,6 +1,7 @@
 package at.ac.fhcampuswien.fhmdb;
 
 import at.ac.fhcampuswien.fhmdb.api.MovieAPI;
+import at.ac.fhcampuswien.fhmdb.database.WatchlistRepository;
 import at.ac.fhcampuswien.fhmdb.exceptions.MovieApiException;
 import at.ac.fhcampuswien.fhmdb.models.ClickEventHandler;
 import at.ac.fhcampuswien.fhmdb.models.Genre;
@@ -31,7 +32,7 @@ public class HomeController implements Initializable {
     public TextField searchField;
 
     @FXML
-    public JFXListView movieListView;
+    public JFXListView<Movie> movieListView;
 
     @FXML
     public JFXComboBox genreComboBox;
@@ -59,6 +60,7 @@ public class HomeController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         initializeState();
         initializeLayout();
+        showHome();
     }
 
     public void initializeState() {
@@ -271,6 +273,22 @@ public class HomeController implements Initializable {
         //watchlist.addMovie(movie);
         System.out.println("Film zur Watchlist hinzugefügt: " + clickedItem.getTitle());
     };
+
+   public void showHome() {
+       try {
+           List<Movie> movies = MovieAPI.getAllMovies();
+           movieListView.setItems(FXCollections.observableArrayList(movies));
+       } catch (MovieApiException e) {
+           System.out.println("Fehler beim Laden der Filme: " + e.getMessage());
+           //TODO: Filme aus der DB laden und anzeigen
+       }
+   }
+
+   public void showWatchlist() {
+       List<Movie> watchlistMovies = WatchlistRepository.getInstance().getAllWatchlistMovies();
+       movieListView.setItems(FXCollections.observableArrayList(watchlistMovies));
+   }
+
 
 }
 
