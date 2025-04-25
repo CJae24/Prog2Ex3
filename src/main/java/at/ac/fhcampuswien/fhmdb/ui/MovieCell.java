@@ -17,16 +17,26 @@ public class MovieCell extends ListCell<Movie> {
     private final Label title = new Label();
     private final Label detail = new Label();
     private final Label genre = new Label();
-    private final JFXButton watchlistBtn = new JFXButton("Watchlist");
+    private final JFXButton actionBtn = new JFXButton();
     private final JFXButton detailBtn = new JFXButton("Show Details");
-    private final VBox layout = new VBox(title, detail, genre, detailBtn);
+    private final VBox layout = new VBox(title, detail, genre, detailBtn, actionBtn);
     private boolean collapsedDetails = true;
+    private final boolean isWatchlistMode;
+    private VBox detailsBox = null;
 
-    public MovieCell(ClickEventHandler addToWatchlistClicked) {
+    public MovieCell(ClickEventHandler<Movie> clickHandler, boolean isWatchlistMode) {
         super();
+        this.isWatchlistMode = isWatchlistMode;
+
+        if (isWatchlistMode) {
+            actionBtn.setText("Remove");
+        } else {
+            actionBtn.setText("Add to Watchlist");
+        }
+
         // color scheme
         detailBtn.setStyle("-fx-background-color: #f5c518;");
-        watchlistBtn.setStyle("-fx-background-color: #f5c518;");
+        actionBtn.setStyle("-fx-background-color: #f5c518;");
         title.getStyleClass().add("text-yellow");
         detail.getStyleClass().add("text-white");
         genre.getStyleClass().add("text-white");
@@ -40,21 +50,28 @@ public class MovieCell extends ListCell<Movie> {
         layout.spacingProperty().set(10);
         layout.alignmentProperty().set(javafx.geometry.Pos.CENTER_LEFT);
 
+        //Detail-Button Logik
         detailBtn.setOnMouseClicked(mouseEvent -> {
             if (collapsedDetails) {
-                layout.getChildren().add(getDetails());
+                if (detailsBox == null) {
+                    detailsBox = getDetails();
+                }
+                if (!layout.getChildren().contains(detailsBox)) {
+                    layout.getChildren().add(detailsBox);
+                }
                 collapsedDetails = false;
                 detailBtn.setText("Hide Details");
             } else {
-                layout.getChildren().remove(4);
+                layout.getChildren().remove(detailsBox);
                 collapsedDetails = true;
                 detailBtn.setText("Show Details");
             }
             setGraphic(layout);
         });
 
-        watchlistBtn.setOnMouseClicked(mouseEvent -> {
-            addToWatchlistClicked.onClick(getItem());
+        // Action-Button Logik
+        actionBtn.setOnMouseClicked(mouseEvent -> {
+            clickHandler.onClick(getItem());
         });
 
     }
@@ -70,6 +87,7 @@ public class MovieCell extends ListCell<Movie> {
         Label writers = new Label("Writers: " + String.join(", ", getItem().getWriters()));
         Label mainCast = new Label("Main Cast: " + String.join(", ", getItem().getMainCast()));
 
+        // Styling
         releaseYear.getStyleClass().add("text-white");
         length.getStyleClass().add("text-white");
         rating.getStyleClass().add("text-white");
