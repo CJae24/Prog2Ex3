@@ -96,8 +96,6 @@ public class HomeController implements Initializable {
     public void initializeLayout() {
 
         movieListView.setItems(observableMovies);   // set the items of the listview to the observable list
-        movieListView.setCellFactory(movieListView -> new MovieCell(onAddToWatchlistClicked)); // apply custom cells to the listview
-
 
         // genre combobox
         Object[] genres = Genre.values();   // get all genres
@@ -125,7 +123,6 @@ public class HomeController implements Initializable {
         ratingFromComboBox.getItems().addAll(ratings);    // add all ratings to the combobox
         ratingFromComboBox.setPromptText("Filter by Rating");
     }
-
 
     public void setMovies(List<Movie> movies) {
         allMovies = movies;
@@ -269,14 +266,21 @@ public class HomeController implements Initializable {
     }
 
 
-    private final ClickEventHandler<Movie> onAddToWatchlistClicked = (clickedItem) -> {
-        //watchlist.addMovie(movie);
-        System.out.println("Film zur Watchlist hinzugefügt: " + clickedItem.getTitle());
+    private final ClickEventHandler<Movie> onAddToWatchlistClicked = (clickedMovie) -> {
+        WatchlistRepository.getInstance().addMovieToWatchlist(clickedMovie);
+        System.out.println("Film zur Watchlist hinzugefügt: " + clickedMovie.getTitle());
+    };
+
+    private final ClickEventHandler<Movie> onRemoveFromWatchlistClicked = (clickedMovie) -> {
+        WatchlistRepository.getInstance().removeMovieFromWatchlist(clickedMovie);
+        System.out.println(clickedMovie.getTitle() + "wurde aus der Watchlist entfernt!");
+        showWatchlist();
     };
 
    public void showHome() {
        try {
            List<Movie> movies = MovieAPI.getAllMovies();
+           movieListView.setCellFactory(listView -> new MovieCell(onAddToWatchlistClicked, false));  // Home-Modus
            movieListView.setItems(FXCollections.observableArrayList(movies));
        } catch (MovieApiException e) {
            System.out.println("Fehler beim Laden der Filme: " + e.getMessage());
@@ -286,6 +290,7 @@ public class HomeController implements Initializable {
 
    public void showWatchlist() {
        List<Movie> watchlistMovies = WatchlistRepository.getInstance().getAllWatchlistMovies();
+       movieListView.setCellFactory(listView -> new MovieCell(onRemoveFromWatchlistClicked, true));
        movieListView.setItems(FXCollections.observableArrayList(watchlistMovies));
    }
 

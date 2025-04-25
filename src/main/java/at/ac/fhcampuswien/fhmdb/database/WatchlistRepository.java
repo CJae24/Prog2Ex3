@@ -14,6 +14,8 @@ public class WatchlistRepository {
 
         private static WatchlistRepository instance;
 
+    private final List<Movie> watchlist = new java.util.ArrayList<>();
+
         private WatchlistRepository() {}
 
         public static WatchlistRepository getInstance() {
@@ -23,14 +25,38 @@ public class WatchlistRepository {
             return instance;
         }
 
-        // Dummy: Liste von Beispiel-Filmen
-        public List<Movie> getAllWatchlistMovies() {
-            // Dummy-Daten als Platzhalter
-            return List.of(
-                    new Movie("Interstellar", "Space Adventure", List.of(Genre.SCIENCE_FICTION)),
-                    new Movie("The Godfather", "Classic Mafia Movie", List.of(Genre.DRAMA))
-            );
-        }
+    public List<Movie> getAllWatchlistMovies() {
+        return new java.util.ArrayList<>(watchlist);  // Gibt aktuelle Watchlist zurück
+    }
 
+    public void addMovieToWatchlist(Movie movie) {
+        if (!watchlist.contains(movie)) {
+            watchlist.add(movie);
+            System.out.println(movie.getTitle() + " wurde zur Watchlist hinzugefügt!");
+        } else {
+            System.out.println(movie.getTitle() + " ist bereits in der Watchlist.");
+        }
+    }
+
+    public void removeMovieFromWatchlist(Movie movie) {
+        watchlist.remove(movie);
+        System.out.println(movie.getTitle() + " wurde aus der Watchlist entfernt!");
+    }
+
+
+
+//        // Dummy: Liste von Beispiel-Filmen
+//        public List<Movie> getAllWatchlistMovies() {
+//            // Dummy-Daten als Platzhalter
+//            return List.of(
+//                    new Movie("Interstellar", "Space Adventure", List.of(Genre.SCIENCE_FICTION)),
+//                    new Movie("The Godfather", "Classic Mafia Movie", List.of(Genre.DRAMA))
+//            );
+//        }
+//
+//        public void removeMovieFromWatchlist(Movie movie) {
+//            watchlist.remove(movie);
+//        }
+//
 
 }
