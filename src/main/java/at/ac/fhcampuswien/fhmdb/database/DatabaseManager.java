@@ -82,8 +82,13 @@ public class DatabaseManager {
     }
 
     private void createTables() throws SQLException {
-        System.out.println("DEBUG: createTables  was called"); // temporary
+        System.out.println("DEBUG: Checking/Creating table 'movie'..."); // temporary
+        TableUtils.createTableIfNotExists(connectionSource, MovieEntity.class);
+
+        System.out.println("DEBUG: Checking/Creating table 'watchlist'..."); // temporary
         TableUtils.createTableIfNotExists(connectionSource, WatchlistMovieEntity.class);
+
+        System.out.println("DEBUG: table check/creation complete for movie + watchlist"); // temporary
     }
 
 }
