@@ -1,29 +1,32 @@
 package at.ac.fhcampuswien.fhmdb.database;
+import at.ac.fhcampuswien.fhmdb.exceptions.DatabaseException;
 import at.ac.fhcampuswien.fhmdb.models.Genre;
 import at.ac.fhcampuswien.fhmdb.models.Movie;
 
 import java.util.List;
 
+import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.table.DatabaseTable;
 
-@DatabaseTable (tableName = "WatchlistRepository")
+// @DatabaseTable (tableName = "WatchlistRepository")
 public class WatchlistRepository {
 
     //Achtung nur Platzhalter, um zu sehen, ob GUI funkt
-
-
-        private static WatchlistRepository instance;
-
+    // private static WatchlistRepository instance;
     private final List<Movie> watchlist = new java.util.ArrayList<>();
 
-        private WatchlistRepository() {}
+    private Dao<WatchlistMovieEntity, Long> watchlistDao;
 
-        public static WatchlistRepository getInstance() {
-            if (instance == null) {
-                instance = new WatchlistRepository();
-            }
-            return instance;
+
+    public WatchlistRepository() throws DatabaseException { 
+        try {
+            this.watchlistDao = DatabaseManager.getInstance().getWatchlistDao();
+            System.out.println("DEBUG: WatchlistRepository constructor: DAO obtained"); // temporary
+        } catch (DatabaseException e) {
+            System.err.println("ERROR: WatchlistRepository could not get DAO instance"); // temporary
+            throw e;
         }
+    }
 
     public List<Movie> getAllWatchlistMovies() {
         return new java.util.ArrayList<>(watchlist);  // Gibt aktuelle Watchlist zurück
