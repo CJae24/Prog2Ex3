@@ -40,7 +40,10 @@ public class MovieEntity {
     @DatabaseField
     private double rating;
 
-    public MovieEntity(String apiId, String title, String description, List<Genre> genres, String genresAsString,
+    public MovieEntity() {
+    }
+
+    public MovieEntity(String apiId, String title, String description, List<Genre> genres,
             int releaseYear, String imgUrl, int lengthInMinutes, double rating) {
         this.apiId = apiId;
         this.title = title;
