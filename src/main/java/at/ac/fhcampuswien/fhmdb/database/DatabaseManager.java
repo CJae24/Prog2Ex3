@@ -26,6 +26,9 @@ public class DatabaseManager {
     // DAO
     private Dao<WatchlistMovieEntity, Long> watchlistDao;
 
+    private Dao<MovieEntity, Long> movieDao; // Feld hinzufügen
+
+
 
     // constructor
     private DatabaseManager() throws DatabaseException {
@@ -41,6 +44,10 @@ public class DatabaseManager {
 
             initializeWatchlistDao();
             System.out.println("DEBUG: Watchlist DAO initialized."); // temporary
+            
+            initializeMovieDao();
+            System.out.println("DEBUG: Movie DAO initialized."); // temporary
+
 
         } catch (SQLException e) {
 
@@ -60,6 +67,19 @@ public class DatabaseManager {
         
         return instance;
     }
+
+    private void initializeMovieDao() throws SQLException {
+       movieDao = DaoManager.createDao(connectionSource, MovieEntity.class);
+       System.out.println("DEBUG: Movie DAO initialized in DatabaseManager.");
+   }
+
+   public Dao<MovieEntity, Long> getMovieDao() throws DatabaseException {
+    if (movieDao == null) {
+         System.err.println("ERROR: movieDao was not initialized during DatabaseManager setup.");
+         throw new DatabaseException("Movie DAO was not initialized.");
+    }
+    return movieDao;
+}
 
     private void createConnectionSource() throws SQLException {
         connectionSource = new JdbcConnectionSource(DB_CONNECTION_STRING, DB_USER, DB_PASSWORD);
@@ -107,5 +127,9 @@ public class DatabaseManager {
     public Dao<WatchlistMovieEntity, Long> getWatchlistDao() {
         return watchlistDao;
     }
+
+    
+
+
 
 }
