@@ -83,6 +83,51 @@ public class MovieEntity {
 
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
-}
+    }
+
+    // add getter methods
+    public long getId() {
+        return id;
+    }
+
+    public String getApiId() {
+        return apiId;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getGenres() {
+        return genres;
+    }
+
+    public List<Genre> getGenresAsEnum() {
+        return stringToGenres(this.genres);
+    }
+
+    public int getReleaseYear() {
+        return releaseYear;
+    }
+
+    public String getImgUrl() {
+        return imgUrl;
+    }
+
+    public int getLengthInMinutes() {
+        return lengthInMinutes;
+    }
+
+    public double getRating() {
+        return rating;
+    }
+
+
 
 }
+    
+
