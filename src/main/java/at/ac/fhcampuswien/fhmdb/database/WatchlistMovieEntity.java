@@ -16,5 +16,21 @@ public class WatchlistMovieEntity {
     public WatchlistMovieEntity() {
     }
 
+    // constructor
+    public WatchlistMovieEntity(String apiId) {
+        this.apiId = apiId;
+    }
+
+
+    // getter for Id and apiId
+    public long getId() {
+        return id;
+    }
+
+    public String getApiId() {
+        return apiId;
+    }
     
+
+
 }
