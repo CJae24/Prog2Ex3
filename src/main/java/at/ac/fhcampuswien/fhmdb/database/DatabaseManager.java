@@ -2,6 +2,8 @@ package at.ac.fhcampuswien.fhmdb.database;
 
 import java.sql.SQLException;
 
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
@@ -21,6 +23,10 @@ public class DatabaseManager {
     // ormlite connectionsource field
     private ConnectionSource connectionSource;
 
+    // DAO
+    private Dao<WatchlistMovieEntity, Long> watchlistDao;
+
+
     // constructor
     private DatabaseManager() throws DatabaseException {
         try {
@@ -32,6 +38,9 @@ public class DatabaseManager {
             System.out.println("DEBUG:DatabaseManager constructor: calling createTable..."); // temporary
             createTables();
             System.out.println("DEBUG: DatabaseManager constructor: createTable finished."); // temporary
+
+            initializeWatchlistDao();
+            System.out.println("DEBUG: Watchlist DAO initialized."); // temporary
 
         } catch (SQLException e) {
 
@@ -89,6 +98,14 @@ public class DatabaseManager {
         TableUtils.createTableIfNotExists(connectionSource, WatchlistMovieEntity.class);
 
         System.out.println("DEBUG: table check/creation complete for movie + watchlist"); // temporary
+    }
+
+    private void initializeWatchlistDao() throws SQLException {
+        watchlistDao = DaoManager.createDao(connectionSource, WatchlistMovieEntity.class);
+    }
+
+    public Dao<WatchlistMovieEntity, Long> getWatchlistDao() {
+        return watchlistDao;
     }
 
 }
