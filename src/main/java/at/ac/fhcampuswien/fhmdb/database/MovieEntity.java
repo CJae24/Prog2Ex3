@@ -131,12 +131,12 @@ public class MovieEntity {
         // test genresToString
         List<Genre> genres = List.of(Genre.COMEDY, Genre.FANTASY);
         String genresStr = genresToString(genres);
-        System.out.println("Genres as String: " + genresStr); // expected: COMEDY,FANTASY
+        System.out.println("DEBUG: Genres as String: " + genresStr); // expected: COMEDY,FANTASY
 
         // test stringToGenres
         String inputStr = "ACTION, DRAMA, UNKNOWN";
         List<Genre> genresList = stringToGenres(inputStr);
-        System.out.println("String to Genres: " + genresList); // expected: [ACTION, DRAMA]
+        System.out.println("DEBUG: String to Genres: " + genresList); // expected: [ACTION, DRAMA]
     }
 
 }

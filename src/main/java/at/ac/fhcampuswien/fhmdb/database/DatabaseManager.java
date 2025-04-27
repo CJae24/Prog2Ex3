@@ -21,21 +21,36 @@ public class DatabaseManager {
     private ConnectionSource connectionSource;
 
     // constructor
-    private DatabaseManager() {}
+    private DatabaseManager() throws DatabaseException {
+        try {
+
+            System.out.println("DEBUG:DatabaseManager constructor: trying to create ConnectionSource --"); // temporary
+            createConnectionSource();
+            System.out.println("DEBUG:DatabaseManager constructor: ConnectionSource created"); // temporary
+
+        } catch (SQLException e) {
+
+            System.err.println("ERROR: couldnt create DB Connection Source !!"); // temporary
+            e.printStackTrace();
+            throw new DatabaseException("FAIL to initialize database connection", e);
+
+        }
+    }
 
     // method to get one instance
     public static synchronized DatabaseManager getInstance() throws DatabaseException {
         if (instance == null) {
             System.out.println("DEBUG: instance is nulll"); // temporary
+            instance = new DatabaseManager();
         }
-
-        // placeholder -> return null
-        return null;
-        // todo: return instance;
+        
+        return instance;
     }
 
     private void createConnectionSource() throws SQLException {
         connectionSource = new JdbcConnectionSource(DB_CONNECTION_STRING, DB_USER, DB_PASSWORD);
-}
+    }
+
+    
 
 }
