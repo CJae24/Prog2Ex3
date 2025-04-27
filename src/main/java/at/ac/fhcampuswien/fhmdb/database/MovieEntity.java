@@ -1,6 +1,9 @@
 package at.ac.fhcampuswien.fhmdb.database;
 import at.ac.fhcampuswien.fhmdb.models.Genre;
+
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.j256.ormlite.field.DatabaseField;
@@ -57,6 +60,29 @@ public class MovieEntity {
     return genres.stream()
             .map(Genre::name)
             .collect(Collectors.joining(","));
+    }
+
+    // helper method -> converts comma separated string BACK to a list of Genre
+    public static List<Genre> stringToGenres(String genreString) {
+    if (genreString == null || genreString.isEmpty()) {
+        return List.of();
+    }
+    return Arrays.stream(genreString.split(","))
+            .map(String::trim)
+            .map(s -> {
+
+                try {
+                    return Genre.valueOf(s);
+                } catch (IllegalArgumentException e) {
+
+                    System.err.println("Couldnt parse genre '" + s + "'");
+                    return null;
+                }
+
+            })
+
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
 }
 
 }
