@@ -126,7 +126,18 @@ public class MovieEntity {
         return rating;
     }
 
+    // [temporary !! to test, if the code does what it should]:
+    public static void main(String[] args) {
+        // test genresToString
+        List<Genre> genres = List.of(Genre.COMEDY, Genre.FANTASY);
+        String genresStr = genresToString(genres);
+        System.out.println("Genres as String: " + genresStr); // expected: COMEDY,FANTASY
 
+        // test stringToGenres
+        String inputStr = "ACTION, DRAMA, UNKNOWN";
+        List<Genre> genresList = stringToGenres(inputStr);
+        System.out.println("String to Genres: " + genresList); // expected: [ACTION, DRAMA]
+    }
 
 }
     
