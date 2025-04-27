@@ -1,5 +1,8 @@
 package at.ac.fhcampuswien.fhmdb.database;
 
+import java.sql.SQLException;
+
+import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
 
 import at.ac.fhcampuswien.fhmdb.exceptions.DatabaseException;
@@ -30,5 +33,9 @@ public class DatabaseManager {
         return null;
         // todo: return instance;
     }
+
+    private void createConnectionSource() throws SQLException {
+        connectionSource = new JdbcConnectionSource(DB_CONNECTION_STRING, DB_USER, DB_PASSWORD);
+}
 
 }
