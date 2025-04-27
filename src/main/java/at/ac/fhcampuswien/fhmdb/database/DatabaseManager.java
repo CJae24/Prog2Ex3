@@ -29,15 +29,15 @@ public class DatabaseManager {
             createConnectionSource();
             System.out.println("DEBUG:DatabaseManager constructor: ConnectionSource created"); // temporary
 
-            System.out.println("DEBUG:DatabaseManager constructor: calling createWatchlistTable..."); // temporary
-            createWatchlistTable();
-            System.out.println("DEBUG: DatabaseManager constructor: createWatchlistTable finished."); // temporary
+            System.out.println("DEBUG:DatabaseManager constructor: calling createTable..."); // temporary
+            createTables();
+            System.out.println("DEBUG: DatabaseManager constructor: createTable finished."); // temporary
 
         } catch (SQLException e) {
 
             System.err.println("ERROR: couldnt create DB Connection Source or Table creatinon !!"); // temporary
             e.printStackTrace();
-            throw new DatabaseException("FAIL to initialize database connection or a watchlist table", e);
+            throw new DatabaseException("FAIL to initialize database connection or a table", e);
 
         }
     }
@@ -81,8 +81,8 @@ public class DatabaseManager {
         }
     }
 
-    private void createWatchlistTable() throws SQLException {
-        System.out.println("DEBUG: createWatchlistTable  was called"); // temporary
+    private void createTables() throws SQLException {
+        System.out.println("DEBUG: createTables  was called"); // temporary
         TableUtils.createTableIfNotExists(connectionSource, WatchlistMovieEntity.class);
     }
 
