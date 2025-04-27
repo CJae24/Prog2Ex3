@@ -29,11 +29,15 @@ public class DatabaseManager {
             createConnectionSource();
             System.out.println("DEBUG:DatabaseManager constructor: ConnectionSource created"); // temporary
 
+            System.out.println("DEBUG:DatabaseManager constructor: calling createWatchlistTable..."); // temporary
+            createWatchlistTable();
+            System.out.println("DEBUG: DatabaseManager constructor: createWatchlistTable finished."); // temporary
+
         } catch (SQLException e) {
 
-            System.err.println("ERROR: couldnt create DB Connection Source !!"); // temporary
+            System.err.println("ERROR: couldnt create DB Connection Source or Table creatinon !!"); // temporary
             e.printStackTrace();
-            throw new DatabaseException("FAIL to initialize database connection", e);
+            throw new DatabaseException("FAIL to initialize database connection or a watchlist table", e);
 
         }
     }
