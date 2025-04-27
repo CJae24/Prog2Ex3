@@ -31,6 +31,16 @@ public class WatchlistMovieEntity {
         return apiId;
     }
     
+    // [temporär -> nur zum ausprobieren]
+    public static void main(String[] args) {
+        WatchlistMovieEntity entity1 = new WatchlistMovieEntity();
+        System.out.println("Entity 1 (no-arg): ID=" + entity1.getId() + ", ApiID=" + entity1.getApiId());
+        // expected Entity 1 (no-arg): ID=0, ApiID=null
 
+        String apiIdFromMovie = "film-xyz-789";
+        WatchlistMovieEntity entity2 = new WatchlistMovieEntity(apiIdFromMovie);
+        System.out.println("Entity 2 (param): ID=" + entity2.getId() + ", ApiID=" + entity2.getApiId());
+        // expected Entity 2 (param): ID=0, ApiID=film-xyz-789
+    }
 
 }
