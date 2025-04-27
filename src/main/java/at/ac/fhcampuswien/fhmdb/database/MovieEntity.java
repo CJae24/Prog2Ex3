@@ -33,7 +33,17 @@ public class MovieEntity {
     @DatabaseField
     private double rating;
 
-    public MovieEntity() {
+    // todo! -> List<Genre> genres
+    public MovieEntity(String apiId, String title, String description, String genresAsString,
+            int releaseYear, String imgUrl, int lengthInMinutes, double rating) {
+        this.apiId = apiId;
+        this.title = title;
+        this.description = description;
+        this.genres = genresAsString;
+        this.releaseYear = releaseYear;
+        this.imgUrl = imgUrl;
+        this.lengthInMinutes = lengthInMinutes;
+        this.rating = rating;
     }
 
 }
