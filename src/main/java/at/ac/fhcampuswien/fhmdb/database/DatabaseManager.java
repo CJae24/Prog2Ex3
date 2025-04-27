@@ -51,6 +51,11 @@ public class DatabaseManager {
         connectionSource = new JdbcConnectionSource(DB_CONNECTION_STRING, DB_USER, DB_PASSWORD);
     }
 
+    // getter for  ConnectionSource
+    public ConnectionSource getConnectionSource() {
+        return connectionSource;
+    }
+
     
 
 }
