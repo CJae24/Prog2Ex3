@@ -4,6 +4,7 @@ import at.ac.fhcampuswien.fhmdb.models.Genre;
 import at.ac.fhcampuswien.fhmdb.models.Movie;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.j256.ormlite.dao.Dao;
@@ -42,6 +43,15 @@ public class WatchlistRepository {
         System.err.println("ERROR: Could not add movie with apiId '" + entity.getApiId() + "' to DB watchlist."); // temporary
         e.printStackTrace();
         throw new DatabaseException("Error adding movie to database watchlist", e);
+    }
+    }
+
+    public List<WatchlistMovieEntity> getWatchlist() throws DatabaseException {
+    try {
+        List<WatchlistMovieEntity> result = watchlistDao.queryForAll();
+        return result != null ? result : new ArrayList<>();
+    } catch (SQLException e) {
+        throw new DatabaseException("Error retrieving watchlist from database", e);
     }
     }
 
