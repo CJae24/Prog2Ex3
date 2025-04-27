@@ -1,7 +1,11 @@
 package at.ac.fhcampuswien.fhmdb.database;
+import at.ac.fhcampuswien.fhmdb.models.Genre;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+
 
 @DatabaseTable(tableName = "movie")
 public class MovieEntity {
@@ -33,17 +37,26 @@ public class MovieEntity {
     @DatabaseField
     private double rating;
 
-    // todo! -> List<Genre> genres
-    public MovieEntity(String apiId, String title, String description, String genresAsString,
+    public MovieEntity(String apiId, String title, String description, List<Genre> genres, String genresAsString,
             int releaseYear, String imgUrl, int lengthInMinutes, double rating) {
         this.apiId = apiId;
         this.title = title;
         this.description = description;
-        this.genres = genresAsString;
+        this.genres = genresToString(genres);
         this.releaseYear = releaseYear;
         this.imgUrl = imgUrl;
         this.lengthInMinutes = lengthInMinutes;
         this.rating = rating;
     }
+
+    // helper method -> converts list of Genre to comma separated string
+    private static String genresToString(List<Genre> genres) {
+    if (genres == null || genres.isEmpty()) {
+        return "";
+    }
+    return genres.stream()
+            .map(Genre::name)
+            .collect(Collectors.joining(","));
+}
 
 }
