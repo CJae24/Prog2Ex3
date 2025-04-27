@@ -4,6 +4,7 @@ import java.sql.SQLException;
 
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
+import com.j256.ormlite.table.TableUtils;
 
 import at.ac.fhcampuswien.fhmdb.exceptions.DatabaseException;
 
@@ -78,6 +79,7 @@ public class DatabaseManager {
 
     private void createWatchlistTable() throws SQLException {
         System.out.println("DEBUG: createWatchlistTable  was called"); // temporary
+        TableUtils.createTableIfNotExists(connectionSource, WatchlistMovieEntity.class);
     }
 
 }
