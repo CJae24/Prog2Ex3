@@ -56,6 +56,28 @@ public class DatabaseManager {
         return connectionSource;
     }
 
-    
+
+    // close connection
+    public void closeConnection() throws DatabaseException {
+        if (connectionSource != null) {
+            try {
+
+                connectionSource.close();
+                connectionSource = null; // reset
+                instance = null; // -> reset singleton instance
+                System.out.println("DEBUG: database connection closed"); // temporary
+
+            } catch (Exception e) { 
+
+                System.err.println("ERROR: FAILED  to close database connection"); // temporary
+                e.printStackTrace();
+                throw new DatabaseException("FAILED to close database connection", e);
+            }
+        }
+    }
+
+    private void createWatchlistTable() throws SQLException {
+        System.out.println("DEBUG: createWatchlistTable  was called"); // temporary
+    }
 
 }
