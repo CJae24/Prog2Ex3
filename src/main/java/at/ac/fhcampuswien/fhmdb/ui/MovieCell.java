@@ -1,5 +1,6 @@
 package at.ac.fhcampuswien.fhmdb.ui;
 
+import at.ac.fhcampuswien.fhmdb.exceptions.DatabaseException;
 import at.ac.fhcampuswien.fhmdb.models.ClickEventHandler;
 import at.ac.fhcampuswien.fhmdb.models.Movie;
 import com.jfoenix.controls.JFXButton;
@@ -71,7 +72,11 @@ public class MovieCell extends ListCell<Movie> {
 
         // Action-Button Logik
         actionBtn.setOnMouseClicked(mouseEvent -> {
-            clickHandler.onClick(getItem());
+            try {
+                clickHandler.onClick(getItem());
+            } catch (DatabaseException e) {
+                throw new RuntimeException(e);
+            }
         });
 
     }

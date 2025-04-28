@@ -2,13 +2,12 @@
 package at.ac.fhcampuswien.fhmdb.database;
 
 import at.ac.fhcampuswien.fhmdb.exceptions.DatabaseException;
-import at.ac.fhcampuswien.fhmdb.models.Genre;
 import at.ac.fhcampuswien.fhmdb.models.Movie;
 import com.j256.ormlite.dao.Dao;
-import com.j256.ormlite.stmt.QueryBuilder; // Import für QueryBuilder
+import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.stmt.Where;
 import java.sql.SQLException;
-import java.util.Collections; // Import für leere Liste
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
