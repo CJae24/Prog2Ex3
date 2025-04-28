@@ -1,6 +1,8 @@
 package at.ac.fhcampuswien.fhmdb;
 
 import at.ac.fhcampuswien.fhmdb.api.MovieAPI;
+import at.ac.fhcampuswien.fhmdb.database.MovieEntity;
+import at.ac.fhcampuswien.fhmdb.database.MovieRepository;
 import at.ac.fhcampuswien.fhmdb.database.WatchlistMovieEntity;
 import at.ac.fhcampuswien.fhmdb.database.WatchlistRepository;
 import at.ac.fhcampuswien.fhmdb.exceptions.DatabaseException;
@@ -60,6 +62,7 @@ public class HomeController implements Initializable {
 
     private WatchlistRepository watchlistRepository;
 
+    private MovieRepository movieRepository;
 
 
     @Override
@@ -70,16 +73,54 @@ public class HomeController implements Initializable {
             System.out.println("DEBUG: WatchlistRepository initialized in HomeController."); // Optional
         } catch (DatabaseException e) {
             // Display error and set Repository to null
-            Helpers.showToast("Database Error: Could not initialize Watchlist. " + e.getMessage());
+            Helpers.showToast("Database Error: Could not initialize Watchlist. " + e.getMessage(), ToastState.ERROR);
             System.err.println("ERROR initializing WatchlistRepository: " + e.getMessage());
             e.printStackTrace();
             this.watchlistRepository = null;
+        }
+
+        try {
+            // Repository initialisieren
+            this.movieRepository = new MovieRepository();
+            System.out.println("DEBUG: MovieRepository initialized in HomeController.");
+
+            // Alle Filme von der API holen
+            List<Movie> allMovies = MovieAPI.getAllMovies();
+
+            // 3. In MovieEntity umwandeln (ohne fromDomain, direkt Konstruktor nutzen)
+            List<MovieEntity> entities = allMovies.stream()
+                    .map(m -> new MovieEntity(
+                            m.getId(),
+                            m.getTitle(),
+                            m.getDescription(),
+                            m.getGenres(),          // List<Genre>
+                            m.getReleaseYear(),
+                            m.getImgUrl(),
+                            m.getLengthInMinutes(),
+                            m.getRating()
+                    ))
+                    .collect(Collectors.toList());
+
+            // Alles auf einmal cachen
+            // Optional in einem Batch, um Performance zu verbessern:
+            int count = movieRepository.addAll(entities);
+            System.out.println("DEBUG: Cached " + count + " movies in local DB.");
+
+        } catch (DatabaseException | MovieApiException e) {
+            // Fehler beim Zugriff auf die DB abfangen
+            Helpers.showToast(
+                    "Database Error: Could not initialize MovieRepository. " + e.getMessage(),
+                    ToastState.ERROR
+            );
+            System.err.println("ERROR initializing MovieRepository: " + e.getMessage());
+            e.printStackTrace();
         }
 
         // Existing initialization calls
         initializeState();
         initializeLayout();
         showHome(); // Start with the Home view
+
     }
 
     public void initializeState() {
@@ -149,7 +190,7 @@ public class HomeController implements Initializable {
 
     public void setMovieList(List<Movie> movies) {
         observableMovies.clear();
-        if(movies != null) { // Check if movies is null before adding
+        if (movies != null) { // Check if movies is null before adding
             observableMovies.addAll(movies);
         }
     }
@@ -202,8 +243,8 @@ public class HomeController implements Initializable {
         List<Movie> filteredMovies = allMovies;
 
         if (allMovies == null) { // Handle case where allMovies might be null
-             setMovieList(new ArrayList<>()); // Set to empty list
-             return;
+            setMovieList(new ArrayList<>()); // Set to empty list
+            return;
         }
 
         if (!searchQuery.isEmpty()) {
@@ -218,7 +259,8 @@ public class HomeController implements Initializable {
     }
 
 
-    public void searchBtnClicked(ActionEvent actionEvent) {
+    public void searchBtnClicked(ActionEvent actionEvent) throws DatabaseException {
+
         String searchQuery = searchField.getText().trim().toLowerCase();
         String releaseYear = validateComboboxValue(releaseYearComboBox.getSelectionModel().getSelectedItem());
         String ratingFrom = validateComboboxValue(ratingFromComboBox.getSelectionModel().getSelectedItem());
@@ -229,19 +271,19 @@ public class HomeController implements Initializable {
             try { // Add try-catch for potential IllegalArgumentException
                 genre = Genre.valueOf(genreValue);
             } catch (IllegalArgumentException e) {
-                Helpers.showToast("Invalid Genre selected.");
+                Helpers.showToast("Invalid Genre selected.", ToastState.INFO);
                 // Handle the error, maybe reset genre or return
                 genre = null;
             }
         }
         List<Movie> movies = null;
         try {
+            //throw new MovieApiException("Test API NICHT ERREICHBAR");
             movies = getMovies(searchQuery, genre, releaseYear, ratingFrom);
         } catch (MovieApiException e) {
             Helpers.showToast(e.getMessage() + ", movies were loaded from the cache", ToastState.ERROR);
-            //TODO Load movies from DB Cache
-            // For now, set movies to an empty list or handle appropriately
-            movies = new ArrayList<>(); // Example: Set to empty list
+            movies = movieRepository.getMovies(searchQuery, genreValue, releaseYear, ratingFrom);
+
         }
 
         setMovies(movies); // Update the 'allMovies' list
@@ -251,7 +293,7 @@ public class HomeController implements Initializable {
         // applyAllFilters(searchQuery, genre);
 
         if (sortedState != SortedState.NONE) { // Apply sorting if it was previously set
-             sortMovies(sortedState);
+            sortMovies(sortedState);
         }
     }
 
@@ -291,15 +333,15 @@ public class HomeController implements Initializable {
 
 
     public int getLongestMovieTitle(List<Movie> movies) {
-         if (movies == null) return 0; // Handle null list
-         return movies.stream()
-                 .filter(Objects::nonNull) // Ensure movie objects are not null
-                 .map(Movie::getTitle)
-                 .filter(Objects::nonNull) // Ensure title is not null
-                 .mapToInt(String::length) // Map titles to their lengths
-                 .max()                    // Find the maximum length
-                 .orElse(0);               // Return 0 if the stream is empty
-     }
+        if (movies == null) return 0; // Handle null list
+        return movies.stream()
+                .filter(Objects::nonNull) // Ensure movie objects are not null
+                .map(Movie::getTitle)
+                .filter(Objects::nonNull) // Ensure title is not null
+                .mapToInt(String::length) // Map titles to their lengths
+                .max()                    // Find the maximum length
+                .orElse(0);               // Return 0 if the stream is empty
+    }
 
 
     public long countMoviesFrom(List<Movie> movies, String director) {
@@ -323,13 +365,12 @@ public class HomeController implements Initializable {
     private final ClickEventHandler<Movie> onAddToWatchlistClicked = (clickedMovie) -> {
         // Check if the repository has been initialized
         if (this.watchlistRepository == null) {
-            Helpers.showToast("Watchlist feature is currently unavailable (DB connection failed).");
+            Helpers.showToast("Watchlist feature is currently unavailable (DB connection failed).", ToastState.ERROR);
             return;
         }
         // Check if the Movie object and its ID are valid
         if (clickedMovie == null || clickedMovie.getId() == null) {
-            Helpers.showToast("Cannot add invalid movie to watchlist.");
-            System.err.println("Error: Attempted to add null movie or movie with null ID to watchlist.");
+            Helpers.showToast("Cannot add invalid movie to watchlist.", ToastState.INFO);
             return;
         }
 
@@ -340,26 +381,27 @@ public class HomeController implements Initializable {
             int result = watchlistRepository.addToWatchlist(entity);
             if (result > 0) { // addToWatchlist returns 1 if added, 0 if already present
                 System.out.println("Movie added to Watchlist DB: " + clickedMovie.getTitle());
-                Helpers.showToast(clickedMovie.getTitle() + " added to Watchlist");
+                Helpers.showToast(clickedMovie.getTitle() + " added to Watchlist", ToastState.INFO);
             } else {
                 System.out.println("Movie was already in the Watchlist DB: " + clickedMovie.getTitle());
-                Helpers.showToast(clickedMovie.getTitle() + " is already in the Watchlist");
+                Helpers.showToast(clickedMovie.getTitle() + " is already in the Watchlist", ToastState.INFO);
             }
         } catch (DatabaseException e) {
-            Helpers.showToast("Database Error: Could not add movie. " + e.getMessage());
+            Helpers.showToast("Database Error: Could not add movie. " + e.getMessage(), ToastState.ERROR);
             System.err.println("Failed to add movie to watchlist DB: " + e.getMessage());
             e.printStackTrace();
         }
+    };
 
     private final ClickEventHandler<Movie> onRemoveFromWatchlistClicked = (clickedMovie) -> {
         // Check if the repository has been initialized
         if (this.watchlistRepository == null) {
-            Helpers.showToast("Watchlist feature is currently unavailable (DB connection failed).");
+            Helpers.showToast("Watchlist feature is currently unavailable (DB connection failed).", ToastState.ERROR);
             return;
         }
         // Check if the Movie object and its ID are valid
         if (clickedMovie == null || clickedMovie.getId() == null) {
-            Helpers.showToast("Cannot remove invalid movie from watchlist.");
+            Helpers.showToast("Cannot remove invalid movie from watchlist.", ToastState.INFO);
             System.err.println("Error: Attempted to remove null movie or movie with null ID from watchlist.");
             return;
         }
@@ -369,7 +411,7 @@ public class HomeController implements Initializable {
             int result = watchlistRepository.removeFromWatchlist(clickedMovie.getId());
             if (result > 0) { // removeFromWatchlist returns the number of deleted rows
                 System.out.println(clickedMovie.getTitle() + " was removed from the Watchlist DB!");
-                Helpers.showToast(clickedMovie.getTitle() + " removed from Watchlist");
+                Helpers.showToast(clickedMovie.getTitle() + " removed from Watchlist", ToastState.INFO);
             } else {
                 System.out.println(clickedMovie.getTitle() + " was not found in the Watchlist DB.");
 
@@ -377,7 +419,7 @@ public class HomeController implements Initializable {
             // Update Watchlist view after removal (or attempted removal)
             showWatchlist();
         } catch (DatabaseException e) {
-            Helpers.showToast("Database Error: Could not remove movie. " + e.getMessage());
+            Helpers.showToast("Database Error: Could not remove movie. " + e.getMessage(), ToastState.ERROR);
             System.err.println("Failed to remove movie from watchlist DB: " + e.getMessage());
             e.printStackTrace();
             showWatchlist();
@@ -397,22 +439,25 @@ public class HomeController implements Initializable {
             if (sortedState != SortedState.NONE) { // Apply sorting if it was previously set
                 sortMovies(sortedState);
             } else {
-                 observableMovies.sort(Comparator.comparing(Movie::getTitle)); // Default ASC sort maybe?
-                 sortedState = SortedState.ASCENDING; // Set state if default sort applied
+                observableMovies.sort(Comparator.comparing(Movie::getTitle)); // Default ASC sort maybe?
+                sortedState = SortedState.ASCENDING; // Set state if default sort applied
             }
             System.out.println("DEBUG: Showing Home View");
         } catch (MovieApiException e) {
-            Helpers.showToast("API Error loading movies for Home: " + e.getMessage());
+            Helpers.showToast("API Error loading movies for Home: " + e.getMessage(), ToastState.ERROR);
             System.err.println("Error loading movies for Home: " + e.getMessage());
-            // TODO: Load from DB Cache (MovieRepository) - Implement fallback logic
-            setMovieList(new ArrayList<>()); // Empty list on error
+            try {
+                setMovieList(movieRepository.getMovies(null, null, null, null));
+            } catch (DatabaseException ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 
     public void showWatchlist() {
         // Check if the repository has been initialized
         if (this.watchlistRepository == null) {
-            Helpers.showToast("Watchlist feature is currently unavailable (DB connection failed).");
+            Helpers.showToast("Watchlist feature is currently unavailable (DB connection failed).", ToastState.ERROR);
             setMovieList(new ArrayList<>()); // Show empty list
             // Set CellFactory anyway to avoid errors if the list is populated later
             movieListView.setCellFactory(listView -> new MovieCell(onRemoveFromWatchlistClicked, true));
@@ -441,7 +486,7 @@ public class HomeController implements Initializable {
                 } else {
                     // Fallback if API fetch fails or returns empty
                     System.err.println("WARN: Could not fetch movie details for watchlist IDs.");
-                    Helpers.showToast("Could not load watchlist details (source list empty or fetch failed).");
+                    Helpers.showToast("Could not load watchlist details (source list empty or fetch failed).", ToastState.ERROR);
 
                 }
             } else {
@@ -449,17 +494,17 @@ public class HomeController implements Initializable {
             }
 
         } catch (DatabaseException e) {
-            Helpers.showToast("Database Error: Could not load watchlist. " + e.getMessage());
+            Helpers.showToast("Database Error: Could not load watchlist. " + e.getMessage(), ToastState.ERROR);
             System.err.println("Failed to load watchlist from DB: " + e.getMessage());
             e.printStackTrace();
             watchlistMovies = new ArrayList<>(); // Empty list on DB error
         } catch (MovieApiException e) { // Catch API exception from fetching all movies
-             Helpers.showToast("API Error: Could not fetch movie details for watchlist. " + e.getMessage());
-             System.err.println("Failed to fetch all movies for watchlist details: " + e.getMessage());
-             watchlistMovies = new ArrayList<>(); // Empty list on API error
+            Helpers.showToast("API Error: Could not fetch movie details for watchlist. " + e.getMessage(), ToastState.ERROR);
+            System.err.println("Failed to fetch all movies for watchlist details: " + e.getMessage());
+            watchlistMovies = new ArrayList<>(); // Empty list on API error
         } catch (Exception e) {
             // Catch unexpected errors during filtering/processing
-            Helpers.showToast("Error processing watchlist data: " + e.getMessage());
+            Helpers.showToast("Error processing watchlist data: " + e.getMessage(), ToastState.ERROR);
             System.err.println("Unexpected error processing watchlist: " + e.getMessage());
             e.printStackTrace();
             watchlistMovies = new ArrayList<>();

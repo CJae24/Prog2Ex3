@@ -2,12 +2,16 @@
 package at.ac.fhcampuswien.fhmdb.database;
 
 import at.ac.fhcampuswien.fhmdb.exceptions.DatabaseException;
+import at.ac.fhcampuswien.fhmdb.models.Genre;
+import at.ac.fhcampuswien.fhmdb.models.Movie;
 import com.j256.ormlite.dao.Dao;
-import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.stmt.QueryBuilder; // Import für QueryBuilder
+import com.j256.ormlite.stmt.Where;
+
 import java.sql.SQLException;
 import java.util.Collections; // Import für leere Liste
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MovieRepository {
 
@@ -27,6 +31,92 @@ public class MovieRepository {
             throw e; 
         }
     }
+
+    public List<Movie> getMovies(String searchQuery,
+                                 String genre,
+                                 String releaseYear,
+                                 String ratingFrom) throws DatabaseException {
+        try {
+            // 0. Wenn keine Filter gesetzt sind: alle Movies zurückgeben
+            boolean noFilters = (searchQuery == null || searchQuery.isBlank())
+                    && genre == null
+                    && releaseYear == null
+                    && ratingFrom == null;
+            if (noFilters) {
+                List<MovieEntity> allEntities = movieDao.queryForAll();
+                return allEntities.stream()
+                        .map(this::entityToDomain)
+                        .collect(Collectors.toList());
+            }
+
+            // 1. QueryBuilder aufsetzen
+            QueryBuilder<MovieEntity, Long> qb = movieDao.queryBuilder();
+            Where<MovieEntity, Long> where = qb.where();
+            boolean hasCondition = false;
+
+            // 2. Suchtext in Titel oder Beschreibung
+            if (searchQuery != null && !searchQuery.isBlank()) {
+                where.like("title", "%" + searchQuery + "%")
+                        .or()
+                        .like("description", "%" + searchQuery + "%");
+                hasCondition = true;
+            }
+
+            // 3. Genre-Filter (CSV-Feld)
+            if (genre != null) {
+                if (hasCondition) where.and();
+                where.like("genres", "%" + genre + "%");
+                hasCondition = true;
+            }
+
+            // 4. ReleaseYear-Filter
+            if (releaseYear != null) {
+                if (hasCondition) where.and();
+                where.eq("releaseYear", releaseYear);
+                hasCondition = true;
+            }
+
+            // 5. Mindest-Rating
+            if (ratingFrom != null) {
+                if (hasCondition) where.and();
+                where.ge("rating", ratingFrom);
+                hasCondition = true;
+            }
+
+            // 6. Abfrage ausführen
+            List<MovieEntity> entities = hasCondition
+                    ? qb.query()
+                    : movieDao.queryForAll();
+
+            // 7. Mapping Entity → Domain-Movie
+            return entities.stream()
+                    .map(this::entityToDomain)
+                    .collect(Collectors.toList());
+
+        } catch (SQLException e) {
+            System.err.println("ERROR: Could not retrieve filtered movies from database.");
+            e.printStackTrace();
+            throw new DatabaseException("Error retrieving filtered movies from database", e);
+        }
+    }
+
+    /**
+     * Hilfsmethode, um eine MovieEntity in dein Domain-Objekt Movie zu transformieren.
+     */
+    private Movie entityToDomain(MovieEntity e) {
+        return new Movie(
+                e.getApiId(),                    // id
+                e.getTitle(),                    // title
+                e.getDescription(),              // description
+                e.getGenresAsEnum(),             // genres
+                e.getReleaseYear(),              // releaseYear
+                e.getImgUrl(),                   // imgUrl
+                e.getLengthInMinutes(),          // lengthInMinutes
+                e.getRating()                    // rating
+        );
+    }
+
+
 
     public int addAll(List<MovieEntity> movies) throws DatabaseException {
         int count = 0;
