@@ -87,7 +87,6 @@ public class HomeController implements Initializable {
             // Alle Filme von der API holen
             List<Movie> allMovies = MovieAPI.getAllMovies();
 
-            // 3. In MovieEntity umwandeln (ohne fromDomain, direkt Konstruktor nutzen)
             List<MovieEntity> entities = allMovies.stream()
                     .map(m -> new MovieEntity(
                             m.getId(),
@@ -101,8 +100,6 @@ public class HomeController implements Initializable {
                     ))
                     .collect(Collectors.toList());
 
-            // Alles auf einmal cachen
-            // Optional in einem Batch, um Performance zu verbessern:
             int count = movieRepository.addAll(entities);
             System.out.println("DEBUG: Cached " + count + " movies in local DB.");
 
@@ -117,18 +114,23 @@ public class HomeController implements Initializable {
         }
 
         // Existing initialization calls
-        initializeState();
+        try {
+            initializeState();
+        } catch (DatabaseException e) {
+            throw new RuntimeException(e);
+        }
         initializeLayout();
         showHome(); // Start with the Home view
 
     }
 
-    public void initializeState() {
+    public void initializeState() throws DatabaseException {
         List<Movie> result = null;
         try {
             result = MovieAPI.getAllMovies();
         } catch (MovieApiException e) {
             Helpers.showToast(e.getMessage(), ToastState.ERROR);
+            movieRepository.getMovies(null, null, null, null);
         }
         setMovies(result);
         setMovieList(result);
@@ -454,7 +456,7 @@ public class HomeController implements Initializable {
         }
     }
 
-    public void showWatchlist() {
+    public void showWatchlist() throws DatabaseException {
         // Check if the repository has been initialized
         if (this.watchlistRepository == null) {
             Helpers.showToast("Watchlist feature is currently unavailable (DB connection failed).", ToastState.ERROR);
@@ -501,7 +503,7 @@ public class HomeController implements Initializable {
         } catch (MovieApiException e) { // Catch API exception from fetching all movies
             Helpers.showToast("API Error: Could not fetch movie details for watchlist. " + e.getMessage(), ToastState.ERROR);
             System.err.println("Failed to fetch all movies for watchlist details: " + e.getMessage());
-            watchlistMovies = new ArrayList<>(); // Empty list on API error
+            watchlistMovies = movieRepository.getMovies(null, null, null, null); // Empty list on API error
         } catch (Exception e) {
             // Catch unexpected errors during filtering/processing
             Helpers.showToast("Error processing watchlist data: " + e.getMessage(), ToastState.ERROR);
