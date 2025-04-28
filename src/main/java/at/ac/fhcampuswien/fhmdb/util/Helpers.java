@@ -15,14 +15,21 @@ public class Helpers {
         primaryStage = stage;
     }
 
-    public static void showToast(String message) {
+    public static void showToast(String message, ToastState toastState) {
         if (primaryStage == null) {
             System.err.println("Helpers not initialized with stage.");
             return;
         }
 
         Label toastLabel = new Label(message);
-        toastLabel.setStyle("-fx-background-color: rgba(220, 53, 69, 0.9); -fx-text-fill: white; -fx-padding: 10px; -fx-border-radius: 5px; -fx-background-radius: 5px;");
+
+        if(toastState == ToastState.ERROR) {
+            toastLabel.setStyle("-fx-background-color: rgba(220, 53, 69, 0.9); -fx-text-fill: white; -fx-padding: 10px; -fx-border-radius: 5px; -fx-background-radius: 5px;");
+        }
+        else{
+            toastLabel.setStyle("-fx-background-color: rgba(0, 0, 0, 0.9); -fx-text-fill: white; -fx-padding: 10px; -fx-border-radius: 5px; -fx-background-radius: 5px;");
+
+        }
 
         Popup popup = new Popup();
         popup.centerOnScreen();

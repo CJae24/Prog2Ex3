@@ -11,6 +11,7 @@ import at.ac.fhcampuswien.fhmdb.models.Movie;
 import at.ac.fhcampuswien.fhmdb.models.SortedState;
 import at.ac.fhcampuswien.fhmdb.ui.MovieCell;
 import at.ac.fhcampuswien.fhmdb.util.Helpers;
+import at.ac.fhcampuswien.fhmdb.util.ToastState;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXComboBox;
 import com.jfoenix.controls.JFXListView;
@@ -86,7 +87,7 @@ public class HomeController implements Initializable {
         try {
             result = MovieAPI.getAllMovies();
         } catch (MovieApiException e) {
-            Helpers.showToast(e.getMessage());
+            Helpers.showToast(e.getMessage(), ToastState.ERROR);
         }
         setMovies(result);
         setMovieList(result);
@@ -237,7 +238,7 @@ public class HomeController implements Initializable {
         try {
             movies = getMovies(searchQuery, genre, releaseYear, ratingFrom);
         } catch (MovieApiException e) {
-            Helpers.showToast(e.getMessage() + ", movies were loaded from the cache");
+            Helpers.showToast(e.getMessage() + ", movies were loaded from the cache", ToastState.ERROR);
             //TODO Load movies from DB Cache
             // For now, set movies to an empty list or handle appropriately
             movies = new ArrayList<>(); // Example: Set to empty list
@@ -349,7 +350,6 @@ public class HomeController implements Initializable {
             System.err.println("Failed to add movie to watchlist DB: " + e.getMessage());
             e.printStackTrace();
         }
-    };
 
     private final ClickEventHandler<Movie> onRemoveFromWatchlistClicked = (clickedMovie) -> {
         // Check if the repository has been initialized
